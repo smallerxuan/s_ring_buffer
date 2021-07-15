@@ -111,7 +111,6 @@ void s_ring_buffer_clear(s_ring_buffer_t* s_ring_buffer_p)
     s_ring_buffer_unlock(&s_ring_buffer_p->element_read_lock);
     s_ring_buffer_p->element_write_index      = 0;
     s_ring_buffer_unlock(&s_ring_buffer_p->element_write_lock);
-    
 
 s_ring_buffer_clear_out:
     return;
@@ -123,23 +122,27 @@ s_ring_buffer_clear_out:
  * p_elements_start_addr: 元素起始地址
  * elements_num: 元素数量
  * time_out: 超时时间，单位 ms
+ * err_p: 错误信息；正常返回0；参数输入错误，-1；超时，-2
  */
 unsigned int s_ring_buffer_write_elements(s_ring_buffer_t* s_ring_buffer_p,
                                           void*            p_elements_start_addr,
                                           unsigned int     elements_num,
-                                          unsigned int     time_out)
+                                          unsigned int     time_out,
+                                          int*             err_p)
 {
     unsigned int res                            = 0;
     unsigned int elements_ture_write_num        = 0;
     unsigned int elements_current_write_num     = 0;
     unsigned int element_could_write_num        = 0;
     unsigned char* p_elements_cpy_addr          = (unsigned char*)p_elements_start_addr;
+    unsigned int   time_out_in                  = time_out;
 
     if(s_ring_buffer_p == NULL ||
        p_elements_start_addr == NULL ||
        s_ring_buffer_p->element_pool == NULL ||
        s_ring_buffer_p->element_could_write_num == 0) {
-        goto s_ring_buffer_write_elements_out;
+           *err_p = -1;
+           goto s_ring_buffer_write_elements_out;
     }
     
     time_out++;
@@ -167,11 +170,16 @@ unsigned int s_ring_buffer_write_elements(s_ring_buffer_t* s_ring_buffer_p,
 
             s_ring_buffer_p->element_could_read_num   += res;
             s_ring_buffer_unlock(&s_ring_buffer_p->element_read_lock);
-
+            *err_p = 0;
             goto s_ring_buffer_write_elements_out;
         }
-        s_ring_buff_sleep(1);
-    } while(time_out--);
+        if(--time_out > 0) {
+            s_ring_buff_sleep(1);
+        }
+    } while(time_out > 0);
+    if(time_out_in != time_out && time_out == 0) {
+        *err_p = -2;
+    }
 
 s_ring_buffer_write_elements_out:
 	return res;
@@ -183,23 +191,27 @@ s_ring_buffer_write_elements_out:
  * p_elements_save_start_addr: 元素存放起始地址
  * elements_num: 元素数量
  * time_out: 超时时间，单位 ms
+ * err_p: 错误信息；正常返回0；参数输入错误，-1；超时，-2
  */
 unsigned int s_ring_buffer_read_elements(s_ring_buffer_t*  s_ring_buffer_p,
                                          void*             p_elements_save_start_addr,
                                          unsigned int      elements_num,
-                                         unsigned int      time_out)
+                                         unsigned int      time_out,
+                                         int*              err_p)
 {
     unsigned int    res  = 0;
     unsigned int    elements_ture_read_num        = 0;
     unsigned int    elements_current_read_num     = 0;
     unsigned int    element_could_read_num        = 0;
     unsigned char*  p_elements_cpy_addr           = (unsigned char*)p_elements_save_start_addr;
+    unsigned int    time_out_in                   = time_out;
 
     if(s_ring_buffer_p == NULL ||
        p_elements_save_start_addr == NULL ||
        s_ring_buffer_p->element_pool == NULL ||
        s_ring_buffer_p->element_could_read_num == 0) {
-        goto s_ring_buffer_read_elements_out;
+           *err_p = -1;
+           goto s_ring_buffer_read_elements_out;
     }
 
     time_out++;
@@ -227,11 +239,16 @@ unsigned int s_ring_buffer_read_elements(s_ring_buffer_t*  s_ring_buffer_p,
 
             s_ring_buffer_p->element_could_write_num   += res;
             s_ring_buffer_unlock(&s_ring_buffer_p->element_write_lock);
-
+            *err_p = 0;
             goto s_ring_buffer_read_elements_out;
         }
-        s_ring_buff_sleep(1);
-    } while(time_out--);
+        if(--time_out > 0) {
+            s_ring_buff_sleep(1);
+        }
+    } while(time_out > 0);
+    if(time_out_in != time_out && time_out == 0) {
+        *err_p = -2;
+    }
 
 s_ring_buffer_read_elements_out:
     return res;

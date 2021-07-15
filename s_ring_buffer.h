@@ -60,11 +60,13 @@ void s_ring_buffer_clear(s_ring_buffer_t* s_ring_buffer_p);
  * p_elements_start_addr: 元素起始地址
  * elements_num: 元素数量
  * time_out: 超时时间，单位 ms
+ * err_p: 错误信息；正常返回0；参数输入错误，-1；超时，-2
  */
 unsigned int s_ring_buffer_write_elements(s_ring_buffer_t* s_ring_buffer_p,
-                                          void*          p_elements_start_addr,
-                                          unsigned int   elements_num,
-                                          unsigned int   time_out);
+                                          void*            p_elements_start_addr,
+                                          unsigned int     elements_num,
+                                          unsigned int     time_out,
+                                          int*             err_p);
 
 /**
  * 自环形缓冲区读取数据，返回实际读取元素数量
@@ -72,11 +74,13 @@ unsigned int s_ring_buffer_write_elements(s_ring_buffer_t* s_ring_buffer_p,
  * p_elements_save_start_addr: 元素存放起始地址
  * elements_num: 元素数量
  * time_out: 超时时间，单位 ms
+ * err_p: 错误信息；正常返回0；参数输入错误，-1；超时，-2
  */
 unsigned int s_ring_buffer_read_elements(s_ring_buffer_t*  s_ring_buffer_p,
                                          void*             p_elements_save_start_addr,
                                          unsigned int      elements_num,
-                                         unsigned int      time_out);
+                                         unsigned int      time_out,
+                                         int*              err_p);
 /**
  * 获取环形缓冲区容量
  * s_ring_buffer_p：环形缓冲区指针
