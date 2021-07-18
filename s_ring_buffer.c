@@ -139,8 +139,7 @@ unsigned int s_ring_buffer_write_elements(s_ring_buffer_t* s_ring_buffer_p,
 
     if(s_ring_buffer_p == NULL ||
        p_elements_start_addr == NULL ||
-       s_ring_buffer_p->element_pool == NULL ||
-       s_ring_buffer_p->element_could_write_num == 0) {
+       s_ring_buffer_p->element_pool == NULL) {
            *err_p = -1;
            goto s_ring_buffer_write_elements_out;
     }
@@ -208,8 +207,7 @@ unsigned int s_ring_buffer_read_elements(s_ring_buffer_t*  s_ring_buffer_p,
 
     if(s_ring_buffer_p == NULL ||
        p_elements_save_start_addr == NULL ||
-       s_ring_buffer_p->element_pool == NULL ||
-       s_ring_buffer_p->element_could_read_num == 0) {
+       s_ring_buffer_p->element_pool == NULL) {
            *err_p = -1;
            goto s_ring_buffer_read_elements_out;
     }
